@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 300;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            min-height: 20px;
+            transition: all 0.3s;
+        }
+
+        .result:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .unit-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .unit-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            width: 30%;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .unit-box:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Temperature Converter</h1>
+        
+        <div class="input-group">
+            <label for="temperature">Enter Temperature:</label>
+            <input type="number" id="temperature" placeholder="Enter value" step="any">
+        </div>
+        
+        <div class="input-group">
+            <label for="fromScale">From Scale:</label>
+            <select id="fromScale">
+                <option value="celsius">Celsius (°C)</option>
+                <option value="fahrenheit">Fahrenheit (°F)</option>
+                <option value="kelvin">Kelvin (K)</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="toScale">To Scale:</label>
+            <select id="toScale">
+                <option value="fahrenheit">Fahrenheit (°F)</option>
+                <option value="celsius">Celsius (°C)</option>
+                <option value="kelvin">Kelvin (K)</option>
+            </select>
+        </div>
+        
+        <button id="convertBtn">Convert</button>
+        
+        <div class="result" id="result">Result will appear here</div>
+        
+        <div class="unit-display">
+            <div class="unit-box" id="celsiusDisplay">°C: --</div>
+            <div class="unit-box" id="fahrenheitDisplay">°F: --</div>
+            <div class="unit-box" id="kelvinDisplay">K: --</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const convertBtn = document.getElementById('convertBtn');
+            const temperatureInput = document.getElementById('temperature');
+            const fromScaleSelect = document.getElementById('fromScale');
+            const toScaleSelect = document.getElementById('toScale');
+            const resultDiv = document.getElementById('result');
+            const celsiusDisplay = document.getElementById('celsiusDisplay');
+            const fahrenheitDisplay = document.getElementById('fahrenheitDisplay');
+            const kelvinDisplay = document.getElementById('kelvinDisplay');
+
+            convertBtn.addEventListener('click', convertTemperature);
+            temperatureInput.addEventListener('input', updateAllTemperatures);
+
+            function convertTemperature() {
+                const temp = parseFloat(temperatureInput.value);
+                if (isNaN(temp)) {
+                    resultDiv.textContent = 'Please enter a valid number';
+                    return;
+                }
+
+                const fromScale = fromScaleSelect.value;
+                const toScale = toScaleSelect.value;
+                
+                let convertedTemp;
+                
+                if (fromScale === toScale) {
+                    convertedTemp = temp;
+                } else {
+                    // First convert to Celsius as an intermediate step
+                    let celsius;
+                    switch(fromScale) {
+                        case 'celsius':
+                            celsius = temp;
+                            break;
+                        case 'fahrenheit':
+                            celsius = (temp - 32) * 5/9;
+                            break;
+                        case 'kelvin':
+                            celsius = temp - 273.15;
+                            break;
+                    }
+                    
+                    // Then convert from Celsius to the target scale
+                    switch(toScale) {
+                        case 'celsius':
+                            convertedTemp = celsius;
+                            break;
+                        case 'fahrenheit':
+                            convertedTemp = (celsius * 9/5) + 32;
+                            break;
+                        case 'kelvin':
+                            convertedTemp = celsius + 273.15;
+                            break;
+                    }
+                }
+                
+                resultDiv.textContent = `${temp.toFixed(2)} ${getScaleSymbol(fromScale)} = ${convertedTemp.toFixed(2)} ${getScaleSymbol(toScale)}`;
+                updateAllTemperatures();
+            }
+
+            function updateAllTemperatures() {
+                const temp = parseFloat(temperatureInput.value);
+                if (isNaN(temp)) {
+                    celsiusDisplay.textContent = '°C: --';
+                    fahrenheitDisplay.textContent = '°F: --';
+                    kelvinDisplay.textContent = 'K: --';
+                    return;
+                }
+
+                const fromScale = fromScaleSelect.value;
+                
+                let celsius, fahrenheit, kelvin;
+                
+                switch(fromScale) {
+                    case 'celsius':
+                        celsius = temp;
+                        fahrenheit = (temp * 9/5) + 32;
+                        kelvin = temp + 273.15;
+                        break;
+                    case 'fahrenheit':
+                        celsius = (temp - 32) * 5/9;
+                        fahrenheit = temp;
+                        kelvin = celsius + 273.15;
+                        break;
+                    case 'kelvin':
+                        celsius = temp - 273.15;
+                        fahrenheit = (celsius * 9/5) + 32;
+                        kelvin = temp;
+                        break;
+                }
+                
+                celsiusDisplay.textContent = `°C: ${celsius.toFixed(2)}`;
+                fahrenheitDisplay.textContent = `°F: ${fahrenheit.toFixed(2)}`;
+                kelvinDisplay.textContent = `K: ${kelvin.toFixed(2)}`;
+            }
+
+            function getScaleSymbol(scale) {
+                switch(scale) {
+                    case 'celsius': return '°C';
+                    case 'fahrenheit': return '°F';
+                    case 'kelvin': return 'K';
+                    default: return '';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
